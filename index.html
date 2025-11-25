@@ -520,6 +520,17 @@
             <span id="review-count">-- 评价</span>
         </div>
     </div>
+<!--    // 在现有的 stats-container 中添加新的统计卡片-->
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-tv"></i>
+        </div>
+        <div class="stat-title">酷云直播收视率</div>
+        <div class="stat-value" id="kuyunRatingValue">--</div>
+        <div class="stat-trend">
+            <span id="kuyunUpdateTime">--</span>
+        </div>
+    </div>
 </div> <!-- 这个闭合标签是关键 -->
 <div class="content">
     <div class="poster-section">
@@ -643,6 +654,57 @@
             el.style.animationDuration = `${Math.random() * 20 + 10}s`;
             el.style.animationDelay = `${Math.random() * 5}s`;
             container.appendChild(el);
+        }
+    }
+    // 添加获取酷云直播收视率数据的函数
+
+    // 修改获取酷云直播收视率数据的函数，使用代理服务器
+    async function fetchKuyunRatingData() {
+        const kuyunElement = document.getElementById('kuyunRatingValue');
+        const updateTimeElement = document.getElementById('kuyunUpdateTime');
+
+        try {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const dateString = yyyy + mm + dd;
+
+            // 使用代理服务器解决CORS问题
+            const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+            const targetUrl = encodeURIComponent(`https://www.ky.live/api//rtmin?caid=1574644&tvid=13&area=-1&t=2&sd=${dateString}&l_t=${dateString}2004`);
+            const apiUrl = proxyUrl + targetUrl;
+
+            const response = await fetch(apiUrl);
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status && data.data && data.data.list && data.data.list.length > 0) {
+                    const list = data.data.list[0];
+                    if (list.i && list.i.length > 0) {
+                        // 获取最后一个数据点的收视率
+                        const lastRating = list.i[list.i.length - 1].r;
+                        // 转换为百分比格式（保留4位小数）
+                        const percentage = (lastRating * 100).toFixed(4) + '%';
+                        kuyunElement.textContent = percentage;
+
+                        // 显示更新时间
+                        const updateTime = list.i[list.i.length - 1].t;
+                        const formattedTime = updateTime.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5');
+                        updateTimeElement.textContent = formattedTime;
+                    } else {
+                        throw new Error('未找到收视率数据');
+                    }
+                } else {
+                    throw new Error('Invalid data format');
+                }
+            } else {
+                throw new Error('Failed to fetch Kuyun rating data');
+            }
+        } catch (error) {
+            console.error('获取酷云收视率数据失败:', error);
+            kuyunElement.textContent = '--';
+            updateTimeElement.textContent = '获取失败';
         }
     }
 
@@ -801,7 +863,8 @@
             document.getElementById('lastUpdate').textContent = `最后更新: ${timeString}`;
         }
 
-        // 修改 refreshAllData 函数，在数据刷新完成后更新时间显示
+
+// 修改 refreshAllData 函数，添加酷云数据获取
         async function refreshAllData() {
             const refreshBtn = document.getElementById('refreshAllBtn');
             const loadingElement = document.getElementById('loadingAll');
@@ -816,6 +879,7 @@
                     fetchHeatData(),
                     fetchWeiboIndexData(),
                     fetchSSBFLData(),
+                    fetchKuyunRatingData(), // 添加这一行
                     new Promise(resolve => {
                         fetchDoubanRating();
                         setTimeout(resolve, 1000);
@@ -836,7 +900,7 @@
             }
         }
 
-        // 统一的自动刷新函数
+// 修改 autoRefreshData 函数，添加酷云数据获取
         async function autoRefreshData() {
             const loadingElement = document.getElementById('loadingAll');
             const refreshBtn = document.getElementById('refreshAllBtn');
@@ -853,7 +917,8 @@
                 await Promise.all([
                     fetchHeatData(),
                     fetchWeiboIndexData(),
-                    fetchSSBFLData()
+                    fetchSSBFLData(),
+                    fetchKuyunRatingData() // 添加这一行
                 ]);
 
                 // 更新时间显示
@@ -873,11 +938,12 @@
             }
         }
 
-        // 页面加载时获取所有数据并显示初始更新时间
+// 修改页面加载时的初始化函数，添加酷云数据获取
         Promise.all([
             fetchHeatData(),
             fetchWeiboIndexData(),
             fetchSSBFLData(),
+            fetchKuyunRatingData(), // 添加这一行
             new Promise(resolve => {
                 fetchDoubanRating();
                 setTimeout(resolve, 1000);
@@ -888,7 +954,6 @@
             console.error('初始数据加载失败:', error);
             updateLastUpdateTime(); // 即使出错也显示时间
         });
-
         // 每3秒自动刷新一次数据（除豆瓣评分外的数据）
         setInterval(autoRefreshData, 3 * 1000);
 
@@ -897,6 +962,11 @@
             fetchDoubanRating();
         }, 30 * 1000);
 
+// 在其他 setInterval 调用之后添加
+// 每3秒刷新一次酷云收视率数据
+        setInterval(() => {
+            fetchKuyunRatingData();
+        }, 3 * 1000);
         // 刷新按钮事件
         document.getElementById('refreshAllBtn').addEventListener('click', refreshAllData);
     });
