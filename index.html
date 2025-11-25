@@ -664,36 +664,30 @@
         const updateTimeElement = document.getElementById('kuyunUpdateTime');
 
         try {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const dateString = yyyy + mm + dd;
-
-            // 使用代理服务器解决CORS问题
+            // 使用新接口URL
             const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
-            const targetUrl = encodeURIComponent(`https://www.ky.live/api//rtmin?caid=1574644&tvid=13&area=-1&t=2&sd=${dateString}&l_t=${dateString}2004`);
+            const targetUrl = encodeURIComponent('https://www.ky.live/api/same_type/real_epgs?caid=1574644&tvid=13&area=-1');
             const apiUrl = proxyUrl + targetUrl;
 
             const response = await fetch(apiUrl);
 
             if (response.ok) {
                 const data = await response.json();
-                if (data.status && data.data && data.data.list && data.data.list.length > 0) {
-                    const list = data.data.list[0];
-                    if (list.i && list.i.length > 0) {
-                        // 获取最后一个数据点的收视率
-                        const lastRating = list.i[list.i.length - 1].r;
+                if (data.status && data.data && Array.isArray(data.data)) {
+                    // 查找CCTV-8频道且节目名为"大生意人"的数据
+                    const targetData = data.data.find(item =>
+                        item.tvn === "CCTV-8" && item.epg.includes("大生意人")
+                    );
+
+                    if (targetData) {
                         // 转换为百分比格式（保留4位小数）
-                        const percentage = (lastRating * 100).toFixed(4) + '%';
+                        const percentage = (targetData.r * 100).toFixed(4) + '%';
                         kuyunElement.textContent = percentage;
 
                         // 显示更新时间
-                        const updateTime = list.i[list.i.length - 1].t;
-                        const formattedTime = updateTime.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5');
-                        updateTimeElement.textContent = formattedTime;
+                        updateTimeElement.textContent = targetData.time;
                     } else {
-                        throw new Error('未找到收视率数据');
+                        throw new Error('未找到CCTV-8《大生意人》收视率数据');
                     }
                 } else {
                     throw new Error('Invalid data format');
