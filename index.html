@@ -527,9 +527,9 @@
         </div>
         <div class="stat-title">酷云直播收视率</div>
         <div class="stat-value" id="kuyunRatingValue">--</div>
-        <div class="stat-trend">
-            <span id="kuyunUpdateTime">--</span>
-        </div>
+<!--        <div class="stat-trend">-->
+<!--            <span id="kuyunUpdateTime">&#45;&#45;</span>-->
+<!--        </div>-->
     </div>
 </div> <!-- 这个闭合标签是关键 -->
 <div class="content">
@@ -659,9 +659,11 @@
     // 添加获取酷云直播收视率数据的函数
 
     // 修改获取酷云直播收视率数据的函数，使用代理服务器
+
+    // 修改获取酷云直播收视率数据的函数
     async function fetchKuyunRatingData() {
         const kuyunElement = document.getElementById('kuyunRatingValue');
-        const updateTimeElement = document.getElementById('kuyunUpdateTime');
+        // 移除对 updateTimeElement 的引用
 
         try {
             // 使用新接口URL
@@ -684,8 +686,8 @@
                         const percentage = (targetData.r * 100).toFixed(4) + '%';
                         kuyunElement.textContent = percentage;
 
-                        // 显示更新时间
-                        updateTimeElement.textContent = targetData.time;
+                        // 移除时间显示代码
+                        // updateTimeElement.textContent = targetData.time;
                     } else {
                         throw new Error('未找到CCTV-8《大生意人》收视率数据');
                     }
@@ -698,7 +700,8 @@
         } catch (error) {
             console.error('获取酷云收视率数据失败:', error);
             kuyunElement.textContent = '--';
-            updateTimeElement.textContent = '获取失败';
+            // 移除时间显示代码
+            // updateTimeElement.textContent = '获取失败';
         }
     }
 
