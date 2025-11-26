@@ -222,7 +222,7 @@
     }
 
     .poster:hover {
-        transform: scale(1.05); /* 放大1.05倍 */
+        transform: scale(1.5); /* 放大1.5倍 */
     }
 
     .info-section {
@@ -464,7 +464,7 @@
             作者：<a href="https://weibo.com/u/2136166244" class="author-link" target="_blank" style="color: red;">九处</a>
         </div>
         <div class="reward-info">
-            <a href="https://s21.ax1x.com/2025/11/25/pZAGqL4.jpg" target="_blank" style="text-decoration: none; color: #ffd700;">
+            <a href="https://pic.sl.al/gdrive/pic/2025-11-26/fileid_1aPF614Jn4683MxgdV3UiuvN5lKyCLsdE_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251125182103_66_269.jpg" target="_blank" style="text-decoration: none; color: #ffd700;">
                 <i class="fas fa-money-bag"></i> 打赏作者
             </a>
         </div>
@@ -534,7 +534,21 @@
 </div> <!-- 这个闭合标签是关键 -->
 <div class="content">
     <div class="poster-section">
-        <img src="https://s21.ax1x.com/2025/11/25/pZAJwXF.jpg" alt="大生意人海报" class="poster">
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+            <!-- 原始海报 -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: center;">
+                <h3 style="margin-bottom: 15px; color: #ffd700;">剧集海报</h3>
+                <img src="https://s21.ax1x.com/2025/11/25/pZAJwXF.jpg"
+                     alt="大生意人海报" class="poster">
+            </div>
+
+            <!-- 追剧日历 -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: center;">
+                <h3 style="margin-bottom: 15px; color: #ffd700;">追剧日历</h3>
+                <img src="https://api.codetabs.com/v1/proxy?quest=https://pic0.iqiyipic.com/lequ/20251125/754bc22f48a44fdf9196787bba500f6c.jpg"
+                     alt="追剧日历" class="poster" style="width: 100%; max-width: 350px;">
+            </div>
+        </div>
     </div>
 
     <div class="info-section">
@@ -641,7 +655,9 @@
         </footer>
     </div>
 
-    <script>        // 创建背景动画元素
+    <script>
+
+        // 创建背景动画元素
     function createBackgroundAnimation() {
         const container = document.getElementById('backgroundAnimation');
         for (let i = 0; i < 15; i++) {
@@ -951,6 +967,8 @@
             console.error('初始数据加载失败:', error);
             updateLastUpdateTime(); // 即使出错也显示时间
         });
+
+
         // 每3秒自动刷新一次数据（除豆瓣评分外的数据）
         setInterval(autoRefreshData, 3 * 1000);
 
