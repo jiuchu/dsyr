@@ -152,7 +152,19 @@
     }
 
 
+    >/* 在现有样式中添加新的统计卡片样式 */
+    .stat-card.implant-card {
+        background: rgba(255, 200, 100, 0.1);
+        border: 1px solid rgba(255, 200, 100, 0.2);
+    }
 
+    .stat-card.implant-card::before {
+        background: linear-gradient(90deg, #FFA500, #FFD700);
+    }
+
+    .stat-icon.implant-icon {
+        background: linear-gradient(45deg, #FFA500, #FFD700) !important;
+    }
     .stat-title {
         font-size: 1.1rem;
         color: #aaa;
@@ -531,6 +543,30 @@
 <!--            <span id="kuyunUpdateTime">&#45;&#45;</span>-->
 <!--        </div>-->
     </div>
+    <!-- 在现有的统计卡片后面添加植入广告统计卡片 -->
+    <div class="stat-card implant-card">
+        <div class="stat-icon implant-icon">
+            <i class="fas fa-ad"></i>
+        </div>
+        <div class="stat-title">植入品牌数</div>
+        <div class="stat-value" id="brandCount">--</div>
+    </div>
+
+    <div class="stat-card implant-card">
+        <div class="stat-icon implant-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-title">植入总时长</div>
+        <div class="stat-value" id="timeLength">--</div>
+    </div>
+
+    <div class="stat-card implant-card">
+        <div class="stat-icon implant-icon">
+            <i class="fas fa-redo"></i>
+        </div>
+        <div class="stat-title">植入总频次</div>
+        <div class="stat-value" id="adCount">--</div>
+    </div>
 </div> <!-- 这个闭合标签是关键 -->
 <div class="content">
     <div class="poster-section">
@@ -778,6 +814,70 @@
                 heatValueElement.textContent = '--';
             }
         }
+// 添加获取植入广告数据的函数
+
+
+
+
+
+        async function fetchImplantData() {
+            const implantElements = {
+                brandCount: document.getElementById('brandCount'),
+                timeLength: document.getElementById('timeLength'),
+                adCount: document.getElementById('adCount')
+            };
+
+            try {
+                const requestData = {
+                    programCountIds: ["84833"],
+                    startDate: null,
+                    endDate: null,
+                    platformId: 1,
+                    mediaType: 2
+                };
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const response = await fetch('https://shy-salad-5c53.768242663.workers.dev', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.code === 0 && result.data) {
+                        const data = result.data;
+
+                        implantElements.brandCount.textContent = data.brandCount || '--';
+                        const seconds = data.timeLength || 0;
+                        const minutes = Math.floor(seconds / 60);
+                        const remainingSeconds = seconds % 60;
+                        implantElements.timeLength.textContent =
+                            seconds > 0 ? `${minutes}分${remainingSeconds}秒` : '--';
+                        implantElements.adCount.textContent = data.adCount || '--';
+                    } else {
+                        throw new Error(result.msg || `API返回错误: code=${result.code}`);
+                    }
+                } else {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('获取植入广告数据失败:', error);
+                Object.values(implantElements).forEach(element => {
+                    if (element) element.textContent = '--';
+                });
+            }
+        }
 
         // 使用JSONP获取豆瓣评分数据
         function fetchDoubanRating() {
@@ -888,6 +988,7 @@
 
 
 // 修改 refreshAllData 函数，添加酷云数据获取
+        // 修改 refreshAllData 函数，在其中添加植入数据获取
         async function refreshAllData() {
             const refreshBtn = document.getElementById('refreshAllBtn');
             const loadingElement = document.getElementById('loadingAll');
@@ -902,7 +1003,8 @@
                     fetchHeatData(),
                     fetchWeiboIndexData(),
                     fetchSSBFLData(),
-                    fetchKuyunRatingData(), // 添加这一行
+                    fetchKuyunRatingData(),
+                    fetchImplantData(), // 添加这一行
                     new Promise(resolve => {
                         fetchDoubanRating();
                         setTimeout(resolve, 1000);
@@ -923,7 +1025,9 @@
             }
         }
 
+
 // 修改 autoRefreshData 函数，添加酷云数据获取
+        // 修改 autoRefreshData 函数，添加植入数据获取
         async function autoRefreshData() {
             const loadingElement = document.getElementById('loadingAll');
             const refreshBtn = document.getElementById('refreshAllBtn');
@@ -941,7 +1045,8 @@
                     fetchHeatData(),
                     fetchWeiboIndexData(),
                     fetchSSBFLData(),
-                    fetchKuyunRatingData() // 添加这一行
+                    fetchKuyunRatingData(),
+
                 ]);
 
                 // 更新时间显示
@@ -962,11 +1067,13 @@
         }
 
 // 修改页面加载时的初始化函数，添加酷云数据获取
+        // 修改初始化部分，在其中添加植入数据获取
         Promise.all([
             fetchHeatData(),
             fetchWeiboIndexData(),
             fetchSSBFLData(),
-            fetchKuyunRatingData(), // 添加这一行
+            fetchKuyunRatingData(),
+            fetchImplantData(), // 添加这一行
             new Promise(resolve => {
                 fetchDoubanRating();
                 setTimeout(resolve, 1000);
@@ -986,6 +1093,10 @@
         setInterval(() => {
             fetchDoubanRating();
         }, 30 * 1000);
+        // 每6小时刷新招商数据
+        setInterval(() => {
+            fetchImplantData();
+        }, 30 * 60 * 1000);
 
 // 在其他 setInterval 调用之后添加
 // 每3秒刷新一次酷云收视率数据
