@@ -904,7 +904,7 @@
 
                 try {
                     const requestData = {
-                        programCountIds: ["84833"],
+                        programCountIds: ["84833", "84875", "84874", "84876", "84930", "84931" ],
                         startDate: null,
                         endDate: null,
                         platformId: 1,
@@ -1001,7 +1001,8 @@
                             brands.forEach(brand => {
                                 const option = document.createElement('option');
                                 option.value = brand.brandId;
-                                option.textContent = brand.brandName;
+                                // 修改显示内容，包含品牌名称、植入时长、类型数量和广告次数
+                                option.textContent = `${brand.brandName} 植入${brand.timeLength}秒 植入${brand.typeCount}种类型 植入${brand.adCount}次`;
                                 option.style.background = 'var(--darker)';
                                 option.style.color = '#fff';
                                 brandSelector.appendChild(option);
@@ -1019,8 +1020,9 @@
                     }
                 } catch (error) {
                     console.error('获取招商品牌数据失败:', error);
-                    brandSelector.innerHTML = '<option value="" style="background: var(--darker); color: #fff;">数据加载失败</option>';
-                }
+
+// 修改错误状态下的下拉框选项样式
+                    brandSelector.innerHTML = '<option value="" style="background: var(--darker); color: var(--success);">数据加载失败</option>';                }
             }
             // 使用JSONP获取豆瓣评分数据
             function fetchDoubanRating() {
