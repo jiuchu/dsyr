@@ -552,7 +552,15 @@
         <!--                <span>2.5% 上升</span>-->
         <!--            </div>-->
     </div>
-
+    <!-- 在原有的爱奇艺热度指数卡片后面添加 -->
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-crown"></i>
+        </div>
+        <div class="stat-title">历史最高热度</div>
+        <div class="stat-value" id="topHotValue">--</div>
+        <div class="stat-trend" id="topHotDate">--</div>
+    </div>
     <div class="stat-card">
         <div class="stat-icon">
             <i class="fab fa-weibo"></i>
@@ -1077,6 +1085,39 @@
                 }
             }
 
+// 添加获取历史最高热度数据的函数
+            async function fetchTopHotData() {
+                try {
+                    // 使用你提供的Cloudflare代理端点
+                    const response = await fetch('https://proxy.jiuchu.asia/iqiyi/hot_layer');
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        if (data.code === 0 && data.hot && data.hot.album) {
+                            const album = data.hot.album;
+
+                            // 显示历史最高热度值
+                            if (album.top_hot_value) {
+                                document.getElementById('topHotValue').textContent = album.top_hot_value;
+                            }
+
+                            // 显示历史最高热度日期
+                            if (album.top_hot_date) {
+                                document.getElementById('topHotDate').textContent = album.top_hot_date;
+                            }
+                        } else {
+                            throw new Error('Invalid data format');
+                        }
+                    } else {
+                        throw new Error('Failed to fetch top hot data');
+                    }
+                } catch (error) {
+                    console.error('获取历史最高热度数据失败:', error);
+                    document.getElementById('topHotValue').textContent = '--';
+                    document.getElementById('topHotDate').textContent = '--';
+                }
+            }
             // 获取实时播放量数据
             // 修改 fetchSSBFLData 函数
             async function fetchSSBFLData() {
@@ -1134,6 +1175,8 @@
 
 // 修改 refreshAllData 函数，添加酷云数据获取
             // 修改 refreshAllData 函数，在其中添加植入数据获取
+
+// 修改 refreshAllData 函数
             async function refreshAllData() {
                 const refreshBtn = document.getElementById('refreshAllBtn');
                 const loadingElement = document.getElementById('loadingAll');
@@ -1149,7 +1192,8 @@
                         fetchWeiboIndexData(),
                         fetchSSBFLData(),
                         fetchKuyunRatingData(),
-                        fetchImplantData(), // 添加这一行
+                        fetchImplantData(),
+                        fetchTopHotData(), // 添加这一行
                         new Promise(resolve => {
                             fetchDoubanRating();
                             setTimeout(resolve, 1000);
@@ -1170,9 +1214,10 @@
                 }
             }
 
-
 // 修改 autoRefreshData 函数，添加酷云数据获取
             // 修改 autoRefreshData 函数，添加植入数据获取
+
+// 修改 autoRefreshData 函数
             async function autoRefreshData() {
                 const loadingElement = document.getElementById('loadingAll');
                 const refreshBtn = document.getElementById('refreshAllBtn');
@@ -1191,7 +1236,7 @@
                         fetchWeiboIndexData(),
                         fetchSSBFLData(),
                         fetchKuyunRatingData(),
-
+                        fetchTopHotData() // 添加这一行
                     ]);
 
                     // 更新时间显示
@@ -1213,13 +1258,16 @@
 
 // 修改页面加载时的初始化函数，添加酷云数据获取
             // 修改初始化部分，在其中添加植入数据获取
+
+// 修改初始化部分
             Promise.all([
                 fetchHeatData(),
                 fetchWeiboIndexData(),
                 fetchSSBFLData(),
                 fetchKuyunRatingData(),
-                fetchImplantData(), // 添加这一行
-                fetchInvestmentBrands(), // 添加品牌数据获取
+                fetchImplantData(),
+                fetchInvestmentBrands(),
+                fetchTopHotData(), // 添加这一行
                 new Promise(resolve => {
                     fetchDoubanRating();
                     setTimeout(resolve, 1000);
@@ -1230,7 +1278,6 @@
                 console.error('初始数据加载失败:', error);
                 updateLastUpdateTime(); // 即使出错也显示时间
             });
-
 
             // 每3秒自动刷新一次数据（除豆瓣评分外的数据）
             setInterval(autoRefreshData, 3 * 1000);
@@ -1247,7 +1294,11 @@
             setInterval(() => {
                 fetchInvestmentBrands()();
             }, 30 * 60 * 1000);
-
+// 在其他 setInterval 调用之后添加
+// 每30秒刷新一次历史最高热度数据
+            setInterval(() => {
+                fetchTopHotData();
+            }, 30 * 1000);
 
 // 在其他 setInterval 调用之后添加
 // 每3秒刷新一次酷云收视率数据
