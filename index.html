@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大生意人 - 数据看板</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>        :root {
         --primary: #8a2be2;
         --secondary: #ff6b6b;
@@ -717,36 +720,32 @@
         <!--                </div>-->
     </div>
 
-    <!--    <div class="charts-section">-->
-    <!--        <h2 class="section-title">-->
-    <!--            <i class="fas fa-chart-line"></i>-->
-    <!--            数据趋势-->
-    <!--        </h2>-->
+    <div class="charts-section">
+        <h2 class="section-title">
+            <i class="fas fa-chart-line"></i>
+            数据趋势
+        </h2>
 
-    <!--        <div class="chart-grid">-->
-    <!--            <div class="chart-container">-->
-    <!--                <h3 class="chart-title">-->
-    <!--                    <i class="fas fa-fire"></i>-->
-    <!--                    热度变化趋势-->
-    <!--                </h3>-->
-    <!--                <div class="chart-placeholder">-->
-    <!--                    <i class="fas fa-chart-bar"></i>-->
-    <!--                    &nbsp;热度趋势图表-->
-    <!--                </div>-->
-    <!--            </div>-->
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="fas fa-fire"></i>
+                    热度变化趋势
+                </h3>
+                <canvas id="hotTrendChart"></canvas>
+            </div>
 
-    <!--            <div class="chart-container">-->
-    <!--                <h3 class="chart-title">-->
-    <!--                    <i class="fas fa-users"></i>-->
-    <!--                    观众评分分布-->
-    <!--                </h3>-->
-    <!--                <div class="chart-placeholder">-->
-    <!--                    <i class="fas fa-chart-pie"></i>-->
-    <!--                    &nbsp;评分分布图表-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
+<!--            <div class="chart-container">-->
+<!--                <h3 class="chart-title">-->
+<!--                    <i class="fas fa-users"></i>-->
+<!--                    观众评分分布-->
+<!--                </h3>-->
+<!--                <div class="chart-placeholder">-->
+<!--                    <i class="fas fa-chart-pie"></i>-->
+<!--                    &nbsp;评分分布图表-->
+<!--                </div>-->
+<!--            </div>-->
+        </div>
 
 
     <!-- 将最后更新时间的div移动到正确位置 -->
@@ -776,6 +775,97 @@
 
     <script>
 
+        // 添加渲染热度趋势图表的函数
+
+        // 添加渲染热度趋势图表的函数
+
+        // 修改渲染热度趋势图表的函数
+
+        function renderHotTrendChart(mhotData) {
+            const ctx = document.getElementById('hotTrendChart').getContext('2d');
+
+            // 过滤掉无效数据（v === "-1"）
+            const validData = mhotData.filter(item => item.v !== "-1");
+
+            // 提取标签和数值
+            const labels = validData.map(item => item.k);  // 所有有效日期
+            const data = validData.map(item => parseInt(item.v));  // 对应热度值
+
+            // 销毁旧图表实例
+            if (window.hotTrendChartInstance) {
+                window.hotTrendChartInstance.destroy();
+            }
+
+            // 创建新图表
+            window.hotTrendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '热度指数',
+                        data: data,
+                        borderColor: '#8a2be2',
+                        backgroundColor: 'rgba(138, 43, 226, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ff6b6b',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8f9fa',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 10000,
+                            ticks: {
+                                color: '#aaa',
+                                stepSize: 2000,
+                                callback: function(value) {
+                                    return value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    }
+                }
+            });
+        }
         // 创建背景动画元素
         function createBackgroundAnimation() {
             const container = document.getElementById('backgroundAnimation');
@@ -1086,6 +1176,10 @@
             }
 
 // 添加获取历史最高热度数据的函数
+
+// 修改获取历史最高热度数据的函数
+
+// 修改获取历史最高热度数据的函数
             async function fetchTopHotData() {
                 try {
                     // 使用你提供的Cloudflare代理端点
@@ -1105,6 +1199,11 @@
                             // 显示历史最高热度日期
                             if (album.top_hot_date) {
                                 document.getElementById('topHotDate').textContent = album.top_hot_date;
+                            }
+
+                            // 渲染热度趋势图表
+                            if (album.mhot && Array.isArray(album.mhot)) {
+                                renderHotTrendChart(album.mhot);
                             }
                         } else {
                             throw new Error('Invalid data format');
@@ -1258,6 +1357,8 @@
 
 // 修改页面加载时的初始化函数，添加酷云数据获取
             // 修改初始化部分，在其中添加植入数据获取
+
+// 修改初始化部分
 
 // 修改初始化部分
             Promise.all([
