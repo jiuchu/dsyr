@@ -1464,9 +1464,9 @@
 
                         // 如果能计算出时间差，则扩展2个小时
                         if (timeDiff > 0) {
-                            const extendedTime = new Date(lastTime.getTime() + 2 * 60 * 60 * 1000); // 加2小时
-                            const hours = extendedTime.getHours().toString().padStart(2, '0');
-                            const minutes = extendedTime.getMinutes().toString().padStart(2, '0');
+                            const extendedTime = new Date(lastTime.getTime() + 4 * 60 * 60 * 1000); // 加2小时
+                            const hours = extendedTime.getHours().toString().padStart(3, '0');
+                            const minutes = extendedTime.getMinutes().toString().padStart(3, '0');
                             labels = [...labels, `${hours}:${minutes}`];
                         }
                     }
@@ -1667,7 +1667,7 @@
                 });
 
                 // 每3秒自动刷新一次数据（除豆瓣评分外的数据）
-                setInterval(autoRefreshData, 3 * 1000);
+                setInterval(autoRefreshData, 5 * 1000);
 
                 // 每30秒刷新豆瓣评分
                 setInterval(() => {
@@ -1679,7 +1679,7 @@
                 }, 30 * 60 * 1000);
                 // 每6小时刷新招商名单
                 setInterval(() => {
-                    fetchInvestmentBrands()();
+                    fetchInvestmentBrands();
                 }, 30 * 60 * 1000);
 // 在其他 setInterval 调用之后添加
 // 每30秒刷新一次历史最高热度数据
