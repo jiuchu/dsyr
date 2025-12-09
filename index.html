@@ -1668,7 +1668,8 @@
                     fetchImplantData(),
                     fetchInvestmentBrands(),
                     fetchTopHotData(),
-                    fetchRealtimeHotData()
+                    fetchRealtimeHotData(),
+                    fetchDoubanRating()
                 ]).then((results) => {
                     // 如果获取到实时热度数据，渲染图表
                     if (results[7]) {
@@ -1680,13 +1681,13 @@
                     updateLastUpdateTime(); // 即使出错也显示时间
                 });
 
-                // 每3秒自动刷新一次数据（除豆瓣评分外的数据）
+                // 每5秒自动刷新一次数据（除豆瓣评分外的数据）
                 setInterval(autoRefreshData, 5 * 1000);
 
-                // 每30秒刷新豆瓣评分
+                // 修改为30分钟刷新豆瓣评分
                 setInterval(() => {
                     fetchDoubanRating();
-                }, 30 * 1000);
+                }, 30 * 60 * 1000);
                 // 每6小时刷新招商数据
                 setInterval(() => {
                     fetchImplantData();
